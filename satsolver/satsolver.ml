@@ -117,7 +117,7 @@ let test_parse () =
 	assert (parse "a | (b & ~c)" = Or(Var "a", And(Var "b", Not (Var "c"))));
 	print_string "Tests OK\n";;
 
-(*#################################################################################################################*)
+
 
 (* Renvoie le contenu du fichier fn sous forme de string.
 Le fichier ne doit contenir qu'une seule liigne.*)
