@@ -9,9 +9,6 @@ type formule =
 let implique (f1, f2) = Or(Not f1, f2)
 let equivalence (f1, f2) = And(implique (f1, f2), implique (f2, f1))
 
-(*#################################################################################################################*)
-(*** PARSER ***)
-
 exception Erreur_syntaxe
 exception Fichier_invalide
 
@@ -115,8 +112,23 @@ let from_file (filename: string) : formule =
 
 let test_parse () =
 	assert (parse "a | (b & ~c)" = Or(Var "a", And(Var "b", Not (Var "c"))));
-	print_string "Tests OK\n";;
+	assert (parse "F |     T  " = Or(Bot, Top));
+	assert (parse "a = (b > c)" = equivalence(Var "a", implique(Var "b", Var "c")));
 
+	try 
+		let _ = parse "a b > c" in ();
+	with Erreur_syntaxe -> ();
+	try 
+		let _ = parse "((a | F) & c" in ();
+	with Failure "mauvais parenthésage" ->  ();
+
+	print_string "Tests parse OK\n";;
+
+let test_from_file () =
+	assert(from_file "tests/test1.txt" = implique (And (Or (Var "a", Var "b"), Not (Var "c")  ) , Or (Var "d", Var "b")) );
+	assert(from_file "tests/test2.txt" = Or (Var "a", Or (Var "b" , Var "c")) );
+
+	print_string "Tests from_file OK\n";;
 
 
 (* Renvoie le contenu du fichier fn sous forme de string.
@@ -126,8 +138,49 @@ let read_file (fn: string) : string =
     let res = input_line ic in 
     close_in ic; res
 
+(* Renvoie le nombre de ET OU et NON dans une formule *)
+let compt_ops(f: formule) : int =
+	(*Retourne n + compte_ops f *)
+	let rec compte_rec (f: formule)(n: int) : int =
+		match f with
+		| Var _ | Top| Bot -> n
+		| And (fg, fd) | Or (fg, fd) ->
+			let ng = compte_rec fg n in compte_rec fd ng
+		| Not f' -> compte_rec f' (n+1)
+
+	in compte_rec f 0
+
+
+(* Vérifie si une liste est strictement croissante (part. pas de doublons)*)
+let verify_list(l: 'a list) : bool =
+	(* Vérifie si une liste est strictement croissante, en comprenant au debut de la liste y
+	si x = Some(y), si x = None il est ignoré *)
+	let rec verify_preced(l: 'a list)(x: 'a option) : bool =
+		match l, x with 
+		| [], _ -> true
+		| a::l', Some(y) ->
+			if y < a then verify_preced l' (Some a)
+			else false
+		| a::l', None -> verify_preced l' (Some a)
+	in verify_preced l None
+	
+(* Si l1 et l2 sont deux listes strictement croissantes, renvoie la liste 
+   strictement croissante issue de l'union des éléments de l1 et l2 *)
+let union(l1: 'a list)(l2: 'a list) : 'a list =
+	(*Renvoie la concatenation de lres et union(l1, l2) *)
+	let rec union_concat(l1: 'a list)(l2: 'a list)(lres: 'a list) : 'a list =
+		match l1, l2 with
+		| [], _ -> lres @ l2
+		| _, [] -> lres @ l1
+		| a::l1' , b::l2' ->
+			if a < b then 	   union_concat l1' l2 (a::lres)
+			else if b > a then union_concat l1 l2' (b::lres)
+			else			   union_concat l1' l2' (a::lres)		
+	in union_concat l1 l2 [] 	
+
 let test () =
-    assert (1 = 1);
+    test_parse ();
+	test_from_file ();
     print_string "Tous les tests ont réussi\n"
 
 let main ()=
