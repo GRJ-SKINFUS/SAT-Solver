@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -56,5 +57,20 @@ char* au_plus_une(char** l, int n){
     f[index] = ')';
     f[index+1] = '\n';
     free(size);
+    return f;
+}
+
+char* et(char* f1, char* f2){
+    int t1 = strlen(f1);
+    int t2 = strlen(f2);
+    char* f = malloc(sizeof(char) * (t1 + t2 + 4));
+    // (f1 & f2)\0
+    f[0] = '(';
+    strcat(f+1, f1);
+    f[t1 + 1] = '&';
+    strcat(f+2, f2);
+    f[t1+t2+2] = ')';
+    f[t1+t2+3] = '\0';
+
     return f;
 }
