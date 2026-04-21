@@ -148,11 +148,15 @@ let compt_ops(f: formule) : int =
 		match f with
 		| Var _ | Top| Bot -> n
 		| And (fg, fd) | Or (fg, fd) ->
-			let ng = compte_rec fg n in compte_rec fd ng
+			let ng = compte_rec fg (n+1) in compte_rec fd ng
 		| Not f' -> compte_rec f' (n+1)
 
 	in compte_rec f 0
 
+let test_compt_ops () =
+	assert(compt_ops(Or( Not(Var "a"), And(Var "b", Not (Var "c")))) = 4);
+	assert(compt_ops(Top) = 0);
+	print_string "Tests compt_ops réussis !\n"
 
 (* Vérifie si une liste est strictement croissante (part. pas de doublons)*)
 let verify_list(l: 'a list) : bool =
@@ -166,6 +170,13 @@ let verify_list(l: 'a list) : bool =
 			else false
 		| a::l', None -> verify_preced l' (Some a)
 	in verify_preced l None
+
+let test_verify () =
+	assert(verify_list [1;3;4;5] = true);
+	assert(verify_list [] = true);
+	assert(verify_list[4;4;5;6] = false);
+	assert(verify_list[5;4] = false);
+	print_string "Tests verify_list réussis !\n"
 	
 (* Si l1 et l2 sont deux listes strictement croissantes, renvoie la liste 
    strictement croissante issue de l'union des éléments de l1 et l2 *)
@@ -173,13 +184,19 @@ let union(l1: 'a list)(l2: 'a list) : 'a list =
 	(*Renvoie la concatenation de lres et union(l1, l2) *)
 	let rec union_concat(l1: 'a list)(l2: 'a list)(lres: 'a list) : 'a list =
 		match l1, l2 with
-		| [], _ -> lres @ l2
-		| _, [] -> lres @ l1
+		| [], _ ->  List.rev(lres) @ l2
+		| _, [] ->  List.rev(lres) @ l1
 		| a::l1' , b::l2' ->
 			if a < b then 	   union_concat l1' l2 (a::lres)
-			else if b > a then union_concat l1 l2' (b::lres)
+			else if b < a then union_concat l1 l2' (b::lres)
 			else			   union_concat l1' l2' (a::lres)		
-	in union_concat l1 l2 [] 	
+	in union_concat l1 l2 []
+
+let test_union () =
+	assert( union [1;3] [3;4] = [1;3;4]);
+	assert( union [1;2] [] = [1;2]);
+	assert( union [3;4] [5;6] = [3;4;5;6]);
+	print_string "Tests union réussis !\n"
 
 (* Renvoie la liste des variables sans doublons d'une formule *)
 let list_vars(f: formule) : string list =
@@ -189,9 +206,17 @@ let list_vars(f: formule) : string list =
 		| Var var -> union [var] l
 		| Top | Bot -> l
 		| Not f' -> list_vars_update f' l
-		| And (fg, fd) | Or (fg, fd) ->
-			let l' = list_vars_update fg l in list_vars_update fd l'
+		| And (fg, fd) ->
+			list_vars_update fd (list_vars_update fg l)
+		| Or (fg, fd) ->
+			list_vars_update fd (list_vars_update fg l)
 	in list_vars_update f []
+
+let test_list_vars () =
+	assert(list_vars (Or(Var "a", And(Var "b", Not (Var "c")))) = ["a";"b";"c"]);
+	assert(list_vars (Or(Bot, Top)) = []);
+	assert(list_vars (equivalence(Var "a", implique(Var "b", Var "c"))) = ["a";"b";"c"]);
+	print_string "Tests list_vars réussis !\n"
 
 (* Interprete une formule dans une valuation, si la valuation n'est pas valide raise Not_found *)
 let rec interpreter(f: formule)(v: valuation) : bool =
@@ -238,8 +263,13 @@ let valuation_init(vars: string list) : valuation =
 		List.map f vars
 
 let test () =
+		print_string "Tests en cours...\n";
     test_parse ();
-	test_from_file ();
+		test_from_file ();
+		test_compt_ops ();
+		test_verify ();
+		test_union ();
+		test_list_vars ();
     print_string "Tous les tests ont réussi\n"
 
 let main ()=
