@@ -22,6 +22,8 @@ exception Fichier_invalide
 	'=' -> equivalence
  *)
 
+type valuation = (string*bool) list
+
 (* Détermine si c correspond à un opérateur binaire logique *)
 let is_binop (c: char) : bool = match c with 
 	| '&' |  '|' |  '>' |  '='  -> true
@@ -177,6 +179,38 @@ let union(l1: 'a list)(l2: 'a list) : 'a list =
 			else if b > a then union_concat l1 l2' (b::lres)
 			else			   union_concat l1' l2' (a::lres)		
 	in union_concat l1 l2 [] 	
+
+(* Renvoie la liste des variables sans doublons d'une formule *)
+let list_vars(f: formule) : string list =
+	(* Met à jour la liste des variables de l avec celles contenues dans f *)
+	let rec list_vars_update(f: formule)(l: string list) : string list =
+		match f with
+		| Var var -> union [var] l
+		| Top | Bot -> l
+		| Not f' -> list_vars_update f' l
+		| And (fg, fd) | Or (fg, fd) ->
+			let l' = list_vars_update fg l in list_vars_update fd l'
+	in list_vars_update f []
+
+(* Interprete une formule dans une valuation, si la valuation n'est pas valide raise Not_found *)
+let rec interpreter(f: formule)(v: valuation) : bool =
+	match f with 
+	| Var var -> List.assoc var v
+	| Top -> true
+	| Bot -> false
+	| Not f' ->   not (interpreter f' v)
+	| And (fg, fd) -> (interpreter fg v) & (interpreter fd v)
+	| Or (fg, fd) ->  (interpreter fg v) || (interpreter fd v)
+
+(* Si bl représente l'écriture binaire de x, add_one(bl) représente celle de x + 1 
+   Attention : le premier element de bl est le bit de poids faible *)
+let rec add_one(bl: bool list) : bool list =
+	match bl with
+	| [] -> [true]
+	| b::bl' -> 
+		if b then 
+			false::(add_one bl')
+		else true::bl'
 
 let test () =
     test_parse ();
