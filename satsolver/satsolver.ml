@@ -11,6 +11,7 @@ let equivalence (f1, f2) = And(implique (f1, f2), implique (f2, f1))
 
 exception Erreur_syntaxe
 exception Fichier_invalide
+exception Erreur_valuation
 
 (* Symboles:
 	'T' -> true
@@ -122,7 +123,7 @@ let test_parse () =
 	with Erreur_syntaxe -> ();
 	try 
 		let _ = parse "((a | F) & c" in ();
-	with Failure "mauvais parenthésage" ->  ();
+	with Failure msg -> print_string "Erreur de parenthésage ? : "; print_endline msg; ();
 
 	print_string "Tests parse OK\n";;
 
@@ -199,7 +200,7 @@ let rec interpreter(f: formule)(v: valuation) : bool =
 	| Top -> true
 	| Bot -> false
 	| Not f' ->   not (interpreter f' v)
-	| And (fg, fd) -> (interpreter fg v) & (interpreter fd v)
+	| And (fg, fd) -> (interpreter fg v) && (interpreter fd v)
 	| Or (fg, fd) ->  (interpreter fg v) || (interpreter fd v)
 
 (* Si bl représente l'écriture binaire de x, add_one(bl) représente celle de x + 1 
@@ -214,7 +215,7 @@ let rec add_one(bl: bool list) : bool list =
 
 (* Renvoie une liste de bool associée à la valuation v *)
 let valuation_to_bool(v: valuation) : bool list =
-		List.map snd valuation
+		List.map snd v
 
 let valuation_next(v: valuation) : valuation option =
 		let b = add_one(valuation_to_bool v) in
@@ -225,11 +226,11 @@ let valuation_next(v: valuation) : valuation option =
 					| [],[] -> []
 					| (name,_)::v', b::l' ->
 						(name,b)::(remplir_val v' l')
-					| _ -> failwith "valuation maximale"
+					| _ -> raise Erreur_valuation
 
 		in 
-			try : Some(remplir_val v b)
-			with Failure "valuation maximale" -> None
+			try Some(remplir_val v b)
+			with Erreur_valuation -> None
 
 (* Renvoie la valuation ou toute les variables sont mises à fausses *)
 let valuation_init(vars: string list) : valuation =
