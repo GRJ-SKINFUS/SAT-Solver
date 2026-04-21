@@ -238,6 +238,13 @@ let rec add_one(bl: bool list) : bool list =
 			false::(add_one bl')
 		else true::bl'
 
+let test_addone () =
+	assert( add_one [] = [true] );
+	assert( add_one [false;false] = [true;false]);
+	assert( add_one [true;false] = [false; true]);
+	assert( add_one [true] = [false; true]);
+	print_string "Tests add_one réussis !\n"
+
 (* Renvoie une liste de bool associée à la valuation v *)
 let valuation_to_bool(v: valuation) : bool list =
 		List.map snd v
@@ -270,6 +277,7 @@ let test () =
 		test_verify ();
 		test_union ();
 		test_list_vars ();
+		test_addone ();
     print_string "Tous les tests ont réussi\n"
 
 let main ()=
