@@ -10,3 +10,8 @@ Pour une formule avec n variables et k opérateurs,
 Pour améliorer la complexité on pourrait utiliser des dictionnaires, implémentés par exemple
 avec des arbres binaires de recherche(Arbres rouges-noirs en particulier).
 L'ajout(cf. union) se ferait alors en O(log n) et donc list_vars serait en O( k + n*log(n) )
+
+
+
+Q31 - La formule générée est sous FNC si les formules intiales sont des variables.
+Si il y a n formules au départ, la taille de la formule générée est en O(n²).

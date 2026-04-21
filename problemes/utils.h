@@ -11,4 +11,12 @@ Sorties : la disjonction des fonctions
 */
 char* au_moins_une(char** l, int n);
 
+//A CORRIGER
+/*
+Entrees : l une liste de n formules atomiques
+Sorties : une formule vraie ssi au plus une des formules est vraies
+*/
+char* au_plus_une(char** l, int n);
+
+
 #endif
