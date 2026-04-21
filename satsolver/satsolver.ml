@@ -212,6 +212,30 @@ let rec add_one(bl: bool list) : bool list =
 			false::(add_one bl')
 		else true::bl'
 
+(* Renvoie une liste de bool associée à la valuation v *)
+let valuation_to_bool(v: valuation) : bool list =
+		List.map snd valuation
+
+let valuation_next(v: valuation) : valuation option =
+		let b = add_one(valuation_to_bool v) in
+		(* Remplis la valuation v avec les valeurs de l, si le nombre de variables et de bools
+			 ne coincident pas raise valuation maximale *)
+		let rec remplir_val(v: valuation)(l: bool list) : valuation =
+				match v,l with
+					| [],[] -> []
+					| (name,_)::v', b::l' ->
+						(name,b)::(remplir_val v' l')
+					| _ -> failwith "valuation maximale"
+
+		in 
+			try : Some(remplir_val v b)
+			with Failure "valuation maximale" -> None
+
+(* Renvoie la valuation ou toute les variables sont mises à fausses *)
+let valuation_init(vars: string list) : valuation =
+		let f var = (var, false) in
+		List.map f vars
+
 let test () =
     test_parse ();
 	test_from_file ();
