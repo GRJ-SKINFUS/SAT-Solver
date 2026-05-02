@@ -123,7 +123,7 @@ let test_parse () =
 	with Erreur_syntaxe -> ();
 	try 
 		let _ = parse "((a | F) & c" in ();
-	with Failure msg -> print_string "Erreur de parenthésage ? : "; print_endline msg; ();
+	with Failure msg -> print_string "Erreur de parenthésage : "; print_endline msg; ();
 
 	print_string "Tests parse OK\n";;
 
@@ -249,6 +249,7 @@ let test_addone () =
 let valuation_to_bool(v: valuation) : bool list =
 		List.map snd v
 
+(* Renvoie la valuation suivant v selon l'ordre naturel, renvoie None si v est la dernière valuation *)
 let valuation_next(v: valuation) : valuation option =
 		let b = add_one(valuation_to_bool v) in
 		(* Remplis la valuation v avec les valeurs de l, si le nombre de variables et de bools
@@ -264,10 +265,29 @@ let valuation_next(v: valuation) : valuation option =
 			try Some(remplir_val v b)
 			with Erreur_valuation -> None
 
-(* Renvoie la valuation ou toute les variables sont mises à fausses *)
+(* Renvoie la valuation où toute les variables sont mises à faux *)
 let valuation_init(vars: string list) : valuation =
 		let f var = (var, false) in
 		List.map f vars
+
+type sat_result = valuation option
+
+(* Implémentation naïve du SAT-SOLVER, testant toutes les valuations *)
+let satsolver_naif(f: formule) : sat_result =
+	let vars = list_vars f in
+	let v = valuation_init vars in
+	(* Teste la valuation v, la renvoie si elle satisfait la formule, teste la suivante sinon, renvoie None si tout a été testé *)
+	let rec test_val(v: valuation) : sat_result =
+		if interpreter f v then Some v
+		else match valuation_next v with
+			| None -> None
+			| Some v' -> test_val v'
+	in test_val v
+
+let test_satsolver () =
+	assert(satsolver_naif(Or(Var "a", Var "b")) = Some [("a", true); ("b", false)]);
+	assert(satsolver_naif(And(Var "a", Not (Var "a"))) = None);
+	print_string "Tests satsolver_naif réussis !\n"
 
 let test () =
 		print_string "Tests en cours...\n";
@@ -278,12 +298,13 @@ let test () =
 		test_union ();
 		test_list_vars ();
 		test_addone ();
+		test_satsolver ();
     print_string "Tous les tests ont réussi\n"
 
 let main ()=
     if Array.length Sys.argv = 0 then failwith "Execution sans arguments" else begin
-    if Sys.argv.(0) = "test" then test() 
-    else print_string (read_file Sys.argv.(0))
+    if Sys.argv.(1) = "test" then test() 
+    else print_string (read_file Sys.argv.(1))
     end
 
 let _ = main () (* exécution de la fonction main *)
