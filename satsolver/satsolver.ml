@@ -287,7 +287,60 @@ let satsolver_naif(f: formule) : sat_result =
 let test_satsolver () =
 	assert(satsolver_naif(Or(Var "a", Var "b")) = Some [("a", true); ("b", false)]);
 	assert(satsolver_naif(And(Var "a", Not (Var "a"))) = None);
+	assert(satsolver_naif(And(Or(Var "a", Var "b"), Not (Var "c"))) = Some [("a", true); ("b", false); ("c", false)]);
 	print_string "Tests satsolver_naif réussis !\n"
+
+(* Renvoie f simplifiée avec au plus une étape de simplification. S'il y a eu une telle modification, le booléen est à True, False sinon. *)
+let rec simpl_step(f: formule) : formule * bool =
+	match f with
+	| And (Top, p) -> (p, true)
+	| And (p, Top) -> (p, true)
+	| And (Bot, _) -> (Bot, true)
+	| And (_, Bot) -> (Bot, true)
+	| Or (Top, _) -> (Top, true)
+	| Or (_, Top) -> (Top, true)
+	| Or (Bot, p) -> (p, true)
+	| Or (p, Bot) -> (p, true)
+	| Not Not p -> (p, true)
+	| Not Top -> (Bot, true)
+	| Not Bot -> (Top, true)
+
+	| And (fg, fd) -> let (fg', modif_fg) = simpl_step fg in
+				 let (fd', modif_fd) = simpl_step fd in
+				 if modif_fg || modif_fd then (And(fg', fd'), true)
+				 else (f, false)
+	| Or (fg, fd) -> let (fg', modif_fg) = simpl_step fg in
+				  let (fd', modif_fd) = simpl_step fd in
+				  if modif_fg || modif_fd then (Or(fg', fd'), true)
+				  else (f, false)
+	| Not f' -> let (f'', modif) = simpl_step f' in
+				if modif then (Not f'', true)
+				else (f, false)
+
+	| _ -> (f, false)
+
+(* Renvoie f simplifié au maximum *)
+let rec simpl_full(f: formule) : formule =
+	let (f', modif) = simpl_step f in
+	if modif then simpl_full f'
+	else f
+
+(* Version de simplification en temps linéaire garanti *)
+let rec simpl_full_lin(f: formule) : formule =
+	match f with
+	| And (Top, p) | And (p, Top) -> simpl_full_lin p
+	| And (Bot, _) | And (_, Bot) -> Bot
+	| Or (Top, _) | Or (_, Top) -> Top
+	| Or (Bot, p) | Or (p, Bot) -> simpl_full_lin p
+	| Not Not p -> simpl_full_lin p
+	| Not Top -> Bot
+	| Not Bot -> Top
+
+	| And (fg, fd) -> And(simpl_full_lin fg, simpl_full_lin fd)
+	| Or (fg, fd) -> Or(simpl_full_lin fg, simpl_full_lin fd)
+	| Not f' -> Not (simpl_full_lin f')
+
+	| _ -> f
 
 let test () =
 		print_string "Tests en cours...\n";
