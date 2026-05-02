@@ -342,6 +342,39 @@ let rec simpl_full_lin(f: formule) : formule =
 
 	| _ -> f
 
+(* subst f x g renvoie f où toutes les occurrences de x sont remplacées par g *)
+let rec subst(f: formule)(x: string)(g: formule) : formule =
+	match f with
+	| Var y -> if y = x then g else Var y
+	| Top -> Top
+	| Bot -> Bot
+	| And (fg, fd) -> And(subst fg x g, subst fd x g)
+	| Or (fg, fd) -> Or(subst fg x g, subst fd x g)
+	| Not f' -> Not(subst f' x g)
+
+(* Algorithme de Quine *)
+let rec quine(f: formule) : sat_result =
+	let vars = list_vars f in
+	if f = Top then Some  []
+	else if f = Bot then None
+	else
+		match vars with
+		| [] -> None
+		| x::vars' ->
+			let f_true = simpl_full_lin (subst f x Top) in
+			match quine f_true with
+			| None -> begin let f_false = simpl_full_lin (subst f x Bot) in
+					 match quine f_false with
+					 | None -> None
+					 | Some v -> Some ((x, false)::v) end
+			| Some v -> Some ((x, true)::v)
+
+let test_quine () =
+	assert(quine(Or(Var "a", Var "b")) = Some [("a", true)]);
+	assert(quine(And(Var "a", Not (Var "a"))) = None);
+	assert(quine(And(Or(Var "a", Var "b"), Not (Var "c"))) = Some [("a", true); ("c", false)]);
+	print_string "Tests quine réussis !\n"
+
 let test () =
 		print_string "Tests en cours...\n";
     test_parse ();
@@ -352,6 +385,7 @@ let test () =
 		test_list_vars ();
 		test_addone ();
 		test_satsolver ();
+		test_quine ();
     print_string "Tous les tests ont réussi\n"
 
 let main ()=
