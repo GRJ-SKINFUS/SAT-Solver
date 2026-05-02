@@ -352,6 +352,28 @@ let rec subst(f: formule)(x: string)(g: formule) : formule =
 	| Or (fg, fd) -> Or(subst fg x g, subst fd x g)
 	| Not f' -> Not(subst f' x g)
 
+(* Compte le nombre d'occurrences d'une variable dans une formule *)
+let rec count_occ f x =
+  match f with
+  | Var y -> if x = y then 1 else 0
+  | Top | Bot -> 0
+  | Not f1 -> count_occ f1 x
+  | And (f1, f2) | Or (f1, f2) -> count_occ f1 x + count_occ f2 x
+
+(* Choisi la variable de vars qui a le plus d'occurrences dans f *)
+let choose(vars: string list)(f: formule) : string =
+	(* Renvoie la variable de vars qui a le plus d'occurrences dans f *)
+	let rec choose_rec(vars: string list)(best_var: string option)(best_count: int) : string =
+		match vars with
+		| [] -> begin match best_var with
+				| None -> failwith "liste de variables vide"
+				| Some v -> v end
+		| x::vars' ->
+			let count = count_occ f x in
+			if count > best_count then choose_rec vars' (Some x) count
+			else choose_rec vars' best_var best_count
+	in choose_rec vars None (-1)
+
 (* Algorithme de Quine *)
 let rec quine(f: formule) : sat_result =
 	let vars = list_vars f in
@@ -360,20 +382,35 @@ let rec quine(f: formule) : sat_result =
 	else
 		match vars with
 		| [] -> None
-		| x::vars' ->
+		| _ ->
+			let x = choose vars f in
+
 			let f_true = simpl_full_lin (subst f x Top) in
-			match quine f_true with
-			| None -> begin let f_false = simpl_full_lin (subst f x Bot) in
-					 match quine f_false with
-					 | None -> None
-					 | Some v -> Some ((x, false)::v) end
-			| Some v -> Some ((x, true)::v)
+			let f_false = simpl_full_lin (subst f x Bot) in
+			let (first_try, first_val, second_try, second_val) =
+  			if compt_ops f_true < compt_ops f_false then
+    			(f_true, true, f_false, false)
+  			else
+    			(f_false, false, f_true, true) in
+			match quine first_try with
+			| Some v -> Some ((x, first_val)::v)
+			| None -> begin match quine second_try with
+						| Some v -> Some ((x, second_val)::v)
+						| None -> None
+						end
+
 
 let test_quine () =
 	assert(quine(Or(Var "a", Var "b")) = Some [("a", true)]);
 	assert(quine(And(Var "a", Not (Var "a"))) = None);
 	assert(quine(And(Or(Var "a", Var "b"), Not (Var "c"))) = Some [("a", true); ("c", false)]);
 	print_string "Tests quine réussis !\n"
+
+(* Affiche la liste des variables mises à vrai dans une valuation *)
+let rec print_true(v: valuation) : unit =
+	match v with
+	| [] -> ()
+	| (var, b)::v' -> begin if b then (print_string ("- " ^ var ^ "\n")); print_true v' end
 
 let test () =
 		print_string "Tests en cours...\n";
@@ -390,8 +427,13 @@ let test () =
 
 let main ()=
     if Array.length Sys.argv = 0 then failwith "Execution sans arguments" else begin
-    if Sys.argv.(1) = "test" then test() 
-    else print_string (read_file Sys.argv.(1))
+    	if Sys.argv.(1) = "test" then test() 
+    	else begin
+				let f = from_file Sys.argv.(1) in
+				match quine f with
+				| None -> print_string "La formule n'est pas satisfiable\n"
+				| Some v -> begin print_string "La formule est satisfiable en assignant 1 aux variables suivantes et 0 aux autres :\n"; print_true v end
+			end
     end
 
 let _ = main () (* exécution de la fonction main *)

@@ -20,5 +20,11 @@ En théorie on ne visite que chaque noeuds de l'arbre de la formule une seule fo
 Q20 -
 On résoud ce problème de complexité en descendant une unique fois l'arbre: on fusionne les étapes de simplification et de récursion.
 
+Q25-
+Maintenant, au lieu de choisir les variables dans l'odre alphabétique et de tester d'abort T puis F, essayons d'implémenter une stratégie plus optimisée:
+
+Pour le choix de la variable, prenons celle qui apparait le plus de fois dans la formule afin d'espérer obtenir les plus grandes simplifications dès les premières étapes.
+Pour choisir si on teste d'abord T ou F, on génère les 2 formules et on teste celle qui est la plus courte (qui contient le moins d'opérateurs).
+
 Q31 - La formule générée est sous FNC si les formules intiales sont des variables.
 Si il y a n formules au départ, la taille de la formule générée est en O(n²).
