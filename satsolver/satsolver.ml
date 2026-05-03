@@ -388,7 +388,7 @@ let rec quine(f: formule) : sat_result =
 			let f_true = simpl_full_lin (subst f x Top) in
 			let f_false = simpl_full_lin (subst f x Bot) in
 			let (first_try, first_val, second_try, second_val) =
-  			if compt_ops f_true < compt_ops f_false then
+  			if compt_ops f_true <= compt_ops f_false then
     			(f_true, true, f_false, false)
   			else
     			(f_false, false, f_true, true) in
@@ -398,7 +398,6 @@ let rec quine(f: formule) : sat_result =
 						| Some v -> Some ((x, second_val)::v)
 						| None -> None
 						end
-
 
 let test_quine () =
 	assert(quine(Or(Var "a", Var "b")) = Some [("a", true)]);

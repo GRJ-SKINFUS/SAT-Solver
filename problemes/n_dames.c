@@ -3,6 +3,9 @@
 #include "utils.h"
 
 int size_int(int i) {
+    if (i == 0) {
+        return 1;
+    }
     int si = 0;
     int r = i;
     while (r > 0) {
@@ -22,8 +25,9 @@ char* variable(int i, int j) {
 
 char* contrainte_une_ligne (int i, int n){
     char** l = malloc(n * sizeof(char*));
+    
     for (int j = 0; j<n; j++) {
-        l[i] = variable(i, j);
+        l[j] = variable(i, j);
     }
     
     char* auplus = au_plus_une(l, n);
@@ -33,4 +37,10 @@ char* contrainte_une_ligne (int i, int n){
     free(auplus);
 
     return res;
+}
+
+
+int main() {
+    printf("%s\n", contrainte_une_ligne(1, 4));
+    return 0;
 }

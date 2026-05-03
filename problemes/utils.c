@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,12 +17,13 @@ char* au_moins_une(char** l, int n){
     f[0] = '(';
     unsigned int j = 1;
     for (int i = 0; i<n; i++) {
-        strcat(f + j, l[i]);
-        j += size[i] + 2;
+        strcat(f, l[i]);
+        j += size[i] + 1;
         f[j-1] = '|';
+        f[j] = '\0';
     }
     f[j-1] = ')';
-    f[j] = '\n';
+    f[j] = '\0';
     free(size);
     return f;
 }
@@ -34,28 +36,29 @@ char* au_plus_une(char** l, int n){
         size[n] += size[i];
     }
 
-    char* f = malloc(sizeof(char) * (n + (n+1)*(size[n] + n + 1) + 2));//FAUX -> manque les ~
+    char* f = malloc(sizeof(char) * (n + n*(size[n] + 2*n) + 2));
 
     f[0] = '(';
     unsigned int index = 0;
     for (int i = 0; i<n; i++) {
-        index ++;
+        index++;
         f[index] = '(';
         for (int j = 0; j<n; j++) {
             if (i!=j) {
-                index ++;
+                index++;
                 f[index] = '~';
             }
-            strcat(f + index, l[j]);
+            strcat(f, l[j]);
             index += size[i] + 1;
             f[index] = '&';
         }
-        f[index-1] = ')';
+        f[index] = ')';
+        index++;
         f[index] = '|';
     }
 
     f[index] = ')';
-    f[index+1] = '\n';
+    f[index+1] = '\0';
     free(size);
     return f;
 }
