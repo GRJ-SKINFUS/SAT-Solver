@@ -52,7 +52,51 @@ char* contrainte_toutes_ligne (int n){
 }
 
 
+char* contrainte_une_colonne (int j, int n){
+    char** l = malloc(n * sizeof(char*));
+    
+    for (int i = 0; i<n; i++) {
+        l[i] = variable(i, j);
+    }
+    
+    char* res = au_plus_une(l, n);
+
+    return res;
+}
+
+
+char* contrainte_toutes_colonnes (int n){
+    char** l = malloc(n * sizeof(char*));
+    
+    for (int j = 0; j<n; j++) {
+        l[j] = contrainte_une_colonne(j, n);
+    }
+
+    char* res = et_liste(l, n);
+    return res;
+}
+
+
+char* contrainte_une_diagonale (int i, int n){
+    char** l = malloc(n * sizeof(char*));
+
+    int nb = n;
+    if (i < n) {
+        nb = i + 1;
+    } // à continuer, adapter le nombre d'éléments sur la diagonale et les parcourir
+    
+    for (int j = 0; j<n; j++) {
+        l[j] = variable(i, j);
+    }
+    
+    char* res = au_plus_une(l, n);
+
+    return res;
+}
+
+
 int main() {
     printf("%s\n", contrainte_toutes_ligne(4));
+    printf("%s\n", contrainte_toutes_colonnes(4));
     return 0;
 }
