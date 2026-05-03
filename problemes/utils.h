@@ -24,4 +24,10 @@ Sortie : (f1 & f2)
 */
 char* et(char* f1, char* f2);
 
+/*
+Entrees : l une liste de n formules atomiques
+Sortie : conjonction de toute la liste
+*/
+char* et_liste(char** l, int n);
+
 #endif

@@ -40,7 +40,19 @@ char* contrainte_une_ligne (int i, int n){
 }
 
 
+char* contrainte_toutes_ligne (int n){
+    char** l = malloc(n * sizeof(char*));
+    
+    for (int i = 0; i<n; i++) {
+        l[i] = contrainte_une_ligne(i, n);
+    }
+
+    char* res = et_liste(l, n);
+    return res;
+}
+
+
 int main() {
-    printf("%s\n", contrainte_une_ligne(1, 4));
+    printf("%s\n", contrainte_toutes_ligne(4));
     return 0;
 }
