@@ -4,14 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-//A TESTER
+//Renvoie le nombres de caractères utilisés pour écrire i en base 10
+int size_int(int i);
+
 /*
 Entrees : l une liste de n formules atomiques
 Sorties : la disjonction des fonctions
 */
 char* au_moins_une(char** l, int n);
 
-//A CORRIGER
 /*
 Entrees : l une liste de n formules atomiques
 Sorties : une formule vraie ssi au plus une des formules est vraies

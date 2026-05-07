@@ -3,6 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+int size_int(int i) {
+    if (i == 0) {
+        return 1;
+    }
+    int si = 0;
+    int r = i;
+    while (r > 0) {
+        r = r/10;
+        si ++;
+    }
+    return si;
+}
 
 char* au_moins_une(char** l, int n){
     unsigned int* size = malloc((n+1) * sizeof(unsigned int));//size[i] = strlen(l[i]), size[n] = somme des size[i]
