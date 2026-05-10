@@ -399,6 +399,23 @@ let rec quine(f: formule) : sat_result =
 						| None -> None
 						end
 
+(* Algorithme de Quine *)
+let rec quine_t(f: formule) : sat_result =
+	let vars = list_vars f in
+	if f = Top then Some  []
+	else if f = Bot then None
+	else
+		match vars with
+		| [] -> None
+		| x::vars' ->
+			let f_true = simpl_full_lin (subst f x Top) in
+			match quine_t f_true with
+			| Some v -> Some ((x, true)::v)
+			| None -> begin match quine_t (simpl_full_lin (subst f x Bot)) with
+						| Some v -> Some ((x, false)::v)
+						| None -> None
+						end
+
 let test_quine () =
 	assert(quine(Or(Var "a", Var "b")) = Some [("a", true)]);
 	assert(quine(And(Var "a", Not (Var "a"))) = None);
@@ -429,7 +446,7 @@ let main ()=
     	if Sys.argv.(1) = "test" then test() 
     	else begin
 				let f = from_file Sys.argv.(1) in
-				match quine f with
+				match quine_t f with
 				| None -> print_string "La formule n'est pas satisfiable\n"
 				| Some v -> begin print_string "La formule est satisfiable en assignant 1 aux variables suivantes et 0 aux autres :\n"; print_true v end
 			end

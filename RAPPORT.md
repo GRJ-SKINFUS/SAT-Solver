@@ -26,7 +26,7 @@ Maintenant, au lieu de choisir les variables dans l'odre alphabétique et de tes
 Pour le choix de la variable, prenons celle qui apparait le plus de fois dans la formule afin d'espérer obtenir les plus grandes simplifications dès les premières étapes.
 Pour choisir si on teste d'abord T ou F, on génère les 2 formules et on teste celle qui est la plus courte (qui contient le moins d'opérateurs).
 
-Théoriquement, cela permet de réduire la complexité asymptotique. En pratique, cela rajoute pas mal d'opérations à chaque tour et n'est pas toujours le plus efficace.
+Théoriquement, cela permet de réduire la complexité asymptotique. En pratique, cela rajoute pas mal d'opérations à chaque tour et n'est pas toujours le plus efficace. En pratique, on choisira l'algorithme basique pour éviter les grandes constantes de complexité.
 
 Q31 -
 La formule générée est sous FNC si les formules intiales sont des variables.
@@ -51,5 +51,14 @@ Finalement, la formule finale (en nombre d'expressions atomiques) est donc en O(
 Q40-
 On vérifie effectivement que la formule du problème à 3 dames est insatisfiable, et on trouve des solutions pour le problème à 5 dames et à 8 dames:
 
-- pour 5 dames, en regardant ligne par ligne : 2, 5, 3, 1, 3
-- pour 8 dames :
+Avec l'implémentation des choix de variable / true et false :
+
+- pour 5 dames, en regardant ligne par ligne : 2, 5, 3, 1, 3 (trouvé en 1/4 de seconde)
+- pour 8 dames : 6, 8, 2, 4, 1, 7, 5, 3 (trouvé en 20min)
+
+Sans cette optimisations :
+
+- pour 5 dames : 2, 4, 1, 3, 5 (trouvé en 1/100 secondes)
+- pour 8 dames : 4, 7, 5, 2, 6, 1, 3, 8 (trouvé en moins d'1min)
+
+On voit bien qu'en pratique l'algorithme simple est bien plus efficace.
