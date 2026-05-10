@@ -188,7 +188,7 @@ char* gen_formule_maisons () {
         for (int j = 0; j < NUMBER_HOUSE; j++)
         {
             contraintes[i*NUMBER_HOUSE + j] = contrainte_une_caracteristique(i,j);
-            contraintes[i*NUMBER_HOUSE + j + NUMBER_HOUSE*NUMBER_HOUSE + 1] = contrainte_meme_caracteristique(i,j);
+            contraintes[i*NUMBER_HOUSE + j + NUMBER_HOUSE*NUMBER_HOUSE] = contrainte_meme_caracteristique(i,j);
         }
     }
     contraintes[NUMBER_HOUSE*NUMBER_HOUSE*2] = contraintes_problemes();
