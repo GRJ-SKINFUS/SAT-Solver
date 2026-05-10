@@ -336,8 +336,8 @@ let rec simpl_full_lin(f: formule) : formule =
 	| Not Top -> Bot
 	| Not Bot -> Top
 
-	| And (fg, fd) -> And(simpl_full_lin fg, simpl_full_lin fd)
-	| Or (fg, fd) -> Or(simpl_full_lin fg, simpl_full_lin fd)
+	| And (fg, fd) -> And (simpl_full_lin fg, simpl_full_lin fd)
+	| Or (fg, fd) -> Or (simpl_full_lin fg, simpl_full_lin fd)
 	| Not f' -> Not (simpl_full_lin f')
 
 	| _ -> f

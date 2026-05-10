@@ -31,4 +31,10 @@ Sortie : conjonction de toute la liste
 */
 char* et_liste(char** l, int n);
 
+/**
+ * Écrit une formule dans un fichier
+ * Entrees : formule la formule à écrire, filename le nom du fichier
+ */
+void write_to_file (char* formule, char* filename);
+
 #endif

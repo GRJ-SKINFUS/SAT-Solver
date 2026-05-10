@@ -20,11 +20,36 @@ En théorie on ne visite que chaque noeuds de l'arbre de la formule une seule fo
 Q20 -
 On résoud ce problème de complexité en descendant une unique fois l'arbre: on fusionne les étapes de simplification et de récursion.
 
-Q25-
+Q25 -
 Maintenant, au lieu de choisir les variables dans l'odre alphabétique et de tester d'abort T puis F, essayons d'implémenter une stratégie plus optimisée:
 
 Pour le choix de la variable, prenons celle qui apparait le plus de fois dans la formule afin d'espérer obtenir les plus grandes simplifications dès les premières étapes.
 Pour choisir si on teste d'abord T ou F, on génère les 2 formules et on teste celle qui est la plus courte (qui contient le moins d'opérateurs).
 
-Q31 - La formule générée est sous FNC si les formules intiales sont des variables.
-Si il y a n formules au départ, la taille de la formule générée est en O(n²).
+Théoriquement, cela permet de réduire la complexité asymptotique. En pratique, cela rajoute pas mal d'opérations à chaque tour et n'est pas toujours le plus efficace.
+
+Q31 -
+La formule générée est sous FNC si les formules intiales sont des variables.
+Si il y a n formules au départ, on aura 2 parmi n conjonctions la taille de la formule générée est en O(n²).
+
+Q38 -
+Donnons la taille de la formule générée pour le problème des n dames, en fonction de n.
+
+Pour n expressions atomiques, la fonction au_moins_une renvoie une formule de taille n.
+En effet on réalise simplement la disjonction de chaque expression.
+
+Pour n expressions atomiques, la fonction au_plus_une renvoie une formule de taille n². (question précédente)
+
+Ainsi, la taille de la contrainte sur une ligne est en O(n + n²) = O(n²) car exactement une reine = au moins une et au plus une
+Sur chaque colonne, la formule est en O(n²) car on regarde au plus une reine.
+Sur chaque diagonale, c'est comme sur les colonnes, O(n²).
+
+De plus, on inscrit une contrainte sur chaque ligne, chaque colonne et chaque diagonale. Il y a n lignes, n colonnes et 2n-1 diagonales.
+
+Finalement, la formule finale (en nombre d'expressions atomiques) est donc en O(n\*n² + n\*n + (2n-1)\*n²) = O(n^3)
+
+Q40-
+On vérifie effectivement que la formule du problème à 3 dames est insatisfiable, et on trouve des solutions pour le problème à 5 dames et à 8 dames:
+
+- pour 5 dames, en regardant ligne par ligne : 2, 5, 3, 1, 3
+- pour 8 dames :
