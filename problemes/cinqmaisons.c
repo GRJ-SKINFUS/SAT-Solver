@@ -49,7 +49,7 @@ Il faut attribuer 5 nationalités/ maisons(couleur + position)/boissons/ animaux
 Nationalités : Anglais / Suédois / Danois / Norvégien / Allemand
 Maisons : 
     Couleur : Rouge / Verte / Jaune / Bleue / Blanche
-    Position : 1 / 2 / 3 / 4 / 5 ( 1 = à gauche, 3 = au milieu et 5 = à droite )
+    Position : 0 / 1 / 2 / 3 / 4 ( 0 = à gauche, 2 = au milieu et 4 = à droite )
 Boissons : café / thé / lait / yop / eau
 Animaux : chiens / oiseaux / chats / poisson rouge / cheval
 Sports : vélo / danse / escalade / basket / karaté
@@ -137,21 +137,58 @@ char* contrainte_correspondance (int car1, int v1, int car2, int v2){
     return res;
 }
 
+//Vérifie que la maison de caractéristique 1 est à gauche de celle de caractéristique 2
+char* contrainte_voisin_gauche (int car1, int v1, int car2, int v2) {
+    char** l = malloc((NUMBER_HOUSE - 1) * sizeof(char*));
+
+    for (int i = 0; i<NUMBER_HOUSE-1; i++) {
+        l[i] = et(variable(car1, v1, i), variable(car2, v2, i+1));
+    }
+
+    char* res = au_moins_une(l, NUMBER_HOUSE-1);
+    return res;
+}
+
+//Vérifie que la maison de caractéristique 1 est voisine de celle de caractéristique 2
+char* contrainte_voisin (int car1, int v1, int car2, int v2) {
+    char* c1 = contrainte_voisin_gauche(car1,v1,car2,v2);
+    char* c2 = contrainte_voisin_gauche(car2,v2,car1,v1);
+    char* res = ou(c1,c2);
+    free(c1);free(c2);
+    return res;
+}
+
 char* contraintes_problemes () {
     char** contraintes = malloc(15 * sizeof(char*));
     contraintes[0] = contrainte_correspondance(NATIONALITE, ANGLAIS, COULEUR, ROUGE);
     contraintes[1] = contrainte_correspondance(NATIONALITE, SUEDOIS, ANIMAL, CHIEN);
     contraintes[2] = contrainte_correspondance(NATIONALITE, DANOIS, BOISSON, THE);
-    // c4 doit etre fait separement
+    contraintes[3] = contrainte_voisin_gauche(COULEUR, VERTE, COULEUR, BLANCHE);
     contraintes[4] = contrainte_correspondance(COULEUR, VERTE, BOISSON, CAFE);
     contraintes[5] = contrainte_correspondance(SPORT, VELO, ANIMAL, OISEAU);
     contraintes[6] = contrainte_correspondance(COULEUR, JAUNE, SPORT, DANSE);
-    // c8 à 11 doit etre fait separement
+    contraintes[7] = variable(BOISSON,LAIT,2);
+    contraintes[8] = variable(NATIONALITE, NORVEGIEN, 0);
+    contraintes[9] = contrainte_voisin(SPORT, ESCALADE, ANIMAL, CHAT);
+    contraintes[10] = contrainte_voisin(ANIMAL, CHEVAL, SPORT, DANSE);
     contraintes[11] = contrainte_correspondance(SPORT, BASKET, BOISSON, YOP);
     contraintes[12] = contrainte_correspondance(NATIONALITE, ALLEMAND, SPORT, KARATE);
-    // c14 et c15 doit etre fait separement
+    contraintes[13] = contrainte_voisin(NATIONALITE, NORVEGIEN, COULEUR, BLEUE);
+    contraintes[14] = contrainte_voisin(SPORT, ESCALADE, BOISSON, EAU);
 
     char* res = et_liste(contraintes, 15);
     free(contraintes);
     return res;
+}
+
+char* gen_formule_maisons () {
+
+}
+
+int main() {
+    printf("Génération de la formule pour le problème des 5 maisons...\n");
+    char* res = gen_formule_maisons();
+    write_to_file(res, "cinq_maisons.txt");
+    free(res);
+    return 0;
 }

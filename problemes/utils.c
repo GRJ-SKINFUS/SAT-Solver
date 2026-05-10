@@ -104,6 +104,16 @@ char* et(char* f1, char* f2){
     return f;
 }
 
+char* ou(char* f1, char* f2){
+    int t1 = strlen(f1);
+    int t2 = strlen(f2);
+    char* f = malloc(sizeof(char) * (t1 + t2 + 4));
+    // (f1 | f2)\0
+    sprintf(f, "(%s|%s)", f1, f2);
+
+    return f;
+}
+
 char* et_liste(char** l, int n){
     if (n == 0) {
         char* r = malloc(3);

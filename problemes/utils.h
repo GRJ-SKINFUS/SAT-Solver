@@ -26,6 +26,12 @@ Sortie : (f1 & f2)
 char* et(char* f1, char* f2);
 
 /*
+Entrees : f1 et f2 deux formules atomiques
+Sortie : (f1 | f2)
+*/
+char* ou(char* f1, char* f2);
+
+/*
 Entrees : l une liste de n formules atomiques
 Sortie : conjonction de toute la liste
 */
