@@ -78,6 +78,13 @@ char* variable(int c, int i, int j) {
     return var;
 }
 
+char* not_variable(int c, int i, int j) {
+    char* var = malloc(sizeof(char) * 9);//4: 'X_c_i_j\0'
+    sprintf(var, "~X_%d_%d_%d", c, i, j);
+    return var;
+}
+
+
 //Vérifie que la maison j a une et une seule caractéristique c
 char* contrainte_une_caracteristique (int c, int j){
     char** l = malloc(NUMBER_HOUSE * sizeof(char*));
@@ -125,37 +132,36 @@ char* contrainte_meme_caracteristique (int c, int i){
 //14. Le Norvégien vit juste à cçoté de la maison bleue
 //15. Le fan d'escalade a un voisin qui boit de l'eau
 
+//Renvoie X_c1_v1_i => X_c2_v2_j  sous forme FNC-compatible 
+char* implication(int c1, int v1, int i, int c2, int v2, int j, bool par ){
+    char * res = ou_par(not_variable(c1,v1,i), variable(c2,v2,j),par);
+}
+
 //Vérifie que la caractéristique (car1 v1 et car2 v2) est vérifiée par au moins une des maisons
 char* contrainte_correspondance (int car1, int v1, int car2, int v2){
-    char** l = malloc(NUMBER_HOUSE * sizeof(char*));
-
-    for (int i = 0; i<NUMBER_HOUSE; i++) {
-        l[i] = et(variable(car1, v1, i), variable(car2, v2, i));
+    char** clauses = malloc(NUMBER_HOUSE * sizeof(char*));
+    for (int i = 0; i < NUMBER_HOUSE; i++) {
+        clauses[i] = implication(car1, v1, i, car2, v2, i, true);
     }
-
-    char* res = au_moins_une(l, NUMBER_HOUSE);
-    return res;
+    return et_liste(clauses, NUMBER_HOUSE);
 }
 
 //Vérifie que la maison de caractéristique 1 est à gauche de celle de caractéristique 2
 char* contrainte_voisin_gauche (int car1, int v1, int car2, int v2) {
-    char** l = malloc((NUMBER_HOUSE - 1) * sizeof(char*));
-
-    for (int i = 0; i<NUMBER_HOUSE-1; i++) {
-        l[i] = et(variable(car1, v1, i), variable(car2, v2, i+1));
+    char** clauses = malloc((NUMBER_HOUSE-1) * sizeof(char*));
+    for (int i = 0; i < NUMBER_HOUSE-1; i++) {
+        clauses[i] = implication(car1, v1, i, car2, v2, i+1, true);
     }
-
-    char* res = au_moins_une(l, NUMBER_HOUSE-1);
-    return res;
+    return et_liste(clauses, NUMBER_HOUSE-1);
 }
 
 //Vérifie que la maison de caractéristique 1 est voisine de celle de caractéristique 2
 char* contrainte_voisin (int car1, int v1, int car2, int v2) {
-    char* c1 = contrainte_voisin_gauche(car1,v1,car2,v2);
-    char* c2 = contrainte_voisin_gauche(car2,v2,car1,v1);
-    char* res = ou(c1,c2);
-    free(c1);free(c2);
-    return res;
+    char** clauses = malloc((NUMBER_HOUSE-1) * sizeof(char*));
+    for (int i = 0; i < NUMBER_HOUSE-1; i++) {
+        clauses[i] = ou_par(implication(car1, v1, i, car2, v2, i+1,false),implication(car2, v2, i, car1, v1, i+1,false),true);
+    }
+    return et_liste(clauses, NUMBER_HOUSE-1);
 }
 
 char* contraintes_problemes () {

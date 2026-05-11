@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 //Renvoie le nombres de caractères utilisés pour écrire i en base 10
 int size_int(int i);
@@ -30,6 +31,8 @@ Entrees : f1 et f2 deux formules atomiques
 Sortie : (f1 | f2)
 */
 char* ou(char* f1, char* f2);
+
+char* ou_par(char* f1, char* f2, bool par);
 
 /*
 Entrees : l une liste de n formules atomiques

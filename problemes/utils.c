@@ -115,6 +115,21 @@ char* ou(char* f1, char* f2){
     return f;
 }
 
+char* ou_par(char* f1, char* f2, bool par){
+    int t1 = strlen(f1);
+    int t2 = strlen(f2);
+    char* f;
+    if (par) {
+        f = malloc(sizeof(char) * (t1 + t2 + 4));
+            // (f1 | f2)\0
+        sprintf(f, "(%s|%s)", f1, f2);
+    } else {
+        f = malloc(sizeof(char) * (t1 + t2 + 2));
+        sprintf(f, "%s|%s", f1, f2);
+    }
+    return f;
+}
+
 char* et_liste(char** l, int n){
     if (n == 0) {
         char* r = malloc(3);
