@@ -374,8 +374,8 @@ let choose(vars: string list)(f: formule) : string =
 			else choose_rec vars' best_var best_count
 	in choose_rec vars None (-1)
 
-(* Algorithme de Quine *)
-let rec quine(f: formule) : sat_result =
+(* Algorithme de Quine avec choix *)
+let rec quine_opt(f: formule) : sat_result =
 	let vars = list_vars f in
 	if f = Top then Some  []
 	else if f = Bot then None
@@ -392,16 +392,15 @@ let rec quine(f: formule) : sat_result =
     			(f_true, true, f_false, false)
   			else
     			(f_false, false, f_true, true) in
-			match quine first_try with
+			match quine_opt first_try with
 			| Some v -> Some ((x, first_val)::v)
-			| None -> begin match quine second_try with
+			| None -> begin match quine_opt second_try with
 						| Some v -> Some ((x, second_val)::v)
 						| None -> None
 						end
 
-(* Algorithme de Quine *)
-let rec quine_t(f: formule) : sat_result =
-	let vars = list_vars f in
+(* Algorithme de Quine naïf *)
+let rec quine(f: formule)(vars: string list) : sat_result =
 	if f = Top then Some  []
 	else if f = Bot then None
 	else
@@ -409,17 +408,75 @@ let rec quine_t(f: formule) : sat_result =
 		| [] -> None
 		| x::vars' ->
 			let f_true = simpl_full_lin (subst f x Top) in
-			match quine_t f_true with
+			match quine f_true vars' with
 			| Some v -> Some ((x, true)::v)
-			| None -> begin match quine_t (simpl_full_lin (subst f x Bot)) with
+			| None -> begin match quine (simpl_full_lin (subst f x Bot)) vars' with
 						| Some v -> Some ((x, false)::v)
 						| None -> None
 						end
 
+type litteral =
+	| Var of string
+	| NotVar of string
+
+type clause = litteral list
+type fnc = clause list
+
+(* Fonction de conversion d'une formule en FNC *)
+let rec to_FNC(f: formule) : fnc =
+	match f with
+	| Var x -> [[Var x]]
+	| Not (Var x) -> [[NotVar x]]
+	| Top -> []
+	| Bot -> [[]]
+	| Not Top -> [[]]
+	| Not Bot -> []
+	| Not (And (fg, fd)) -> to_FNC (Or (Not fg, Not fd))
+	| Not (Or (fg, fd)) -> to_FNC (And (Not fg, Not fd))
+	| Not (Not f') -> to_FNC f'
+	| And (fg, fd) -> union (to_FNC fg) (to_FNC fd)
+	| Or (fg, fd) ->
+			let fnc_fg = to_FNC fg in
+			let fnc_fd = to_FNC fd in
+			List.concat (List.map (fun c1 -> List.map (fun c2 -> union c1 c2) fnc_fd) fnc_fg)
+
+(* Fonction annexe de simplification d'une formule FNC étant donné une variable à mettre à vrai ou faux *)
+let rec simplify_fnc(f: fnc)(x: string)(invert: bool) : fnc =
+	match f with
+	| [] -> []
+	| c::f' ->
+		if invert then
+			if List.exists (fun c -> c = NotVar x) c then simplify_fnc f' x true
+			else if List.exists (fun c' -> c' = Var x) c then (List.filter (fun c' -> c' <> Var x) c)::(simplify_fnc f' x true)
+			else c::(simplify_fnc f' x true)
+		else
+			if List.exists (fun c -> c = Var x) c then simplify_fnc f' x false
+			else if List.exists (fun c' -> c' = NotVar x) c then (List.filter (fun c' -> c' <> NotVar x) c)::(simplify_fnc f' x false)
+			else c::(simplify_fnc f' x false)
+
+(* Algorithme de Quine spécialisé en FNC *)
+let rec quine_FNC(fnc: fnc) : sat_result =
+	if fnc = [] then Some []
+	else if List.exists (fun c -> c = []) fnc then None
+	else
+		match fnc with
+		| c::fnc' ->
+			begin match c with
+			| Var x :: _ | NotVar x :: _ ->
+				begin match quine_FNC (simplify_fnc fnc x false) with
+				| Some v -> Some ((x, true)::v)
+				| None -> begin match quine_FNC (simplify_fnc fnc x true) with
+							| Some v -> Some ((x, false)::v)
+							| None -> None end
+				end
+			| [] -> None
+			end
+		| [] -> Some []
+
 let test_quine () =
-	assert(quine(Or(Var "a", Var "b")) = Some [("a", true)]);
-	assert(quine(And(Var "a", Not (Var "a"))) = None);
-	assert(quine(And(Or(Var "a", Var "b"), Not (Var "c"))) = Some [("a", true); ("c", false)]);
+	assert(quine_opt(Or(Var "a", Var "b")) = Some [("a", true)]);
+	assert(quine_opt(And(Var "a", Not (Var "a"))) = None);
+	assert(quine_opt(And(Or(Var "a", Var "b"), Not (Var "c"))) = Some [("a", true); ("c", false)]);
 	print_string "Tests quine réussis !\n"
 
 (* Affiche la liste des variables mises à vrai dans une valuation *)
@@ -446,7 +503,7 @@ let main ()=
     	if Sys.argv.(1) = "test" then test() 
     	else begin
 				let f = from_file Sys.argv.(1) in
-				match quine_t f with
+				match quine_FNC (to_FNC f) with
 				| None -> print_string "La formule n'est pas satisfiable\n"
 				| Some v -> begin print_string "La formule est satisfiable en assignant 1 aux variables suivantes et 0 aux autres :\n"; print_true v end
 			end

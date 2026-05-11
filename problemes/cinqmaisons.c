@@ -125,7 +125,7 @@ char* contrainte_meme_caracteristique (int c, int i){
 //14. Le Norvégien vit juste à cçoté de la maison bleue
 //15. Le fan d'escalade a un voisin qui boit de l'eau
 
-//Vérifie que la caractéristique car1 v1 correspond au moins pour une maison à car2 v2
+//Vérifie que la caractéristique (car1 v1 et car2 v2) est vérifiée par au moins une des maisons
 char* contrainte_correspondance (int car1, int v1, int car2, int v2){
     char** l = malloc(NUMBER_HOUSE * sizeof(char*));
 
@@ -182,7 +182,7 @@ char* contraintes_problemes () {
 }
 
 char* gen_formule_maisons () {
-    char** contraintes = malloc(sizeof(char*) * (NUMBER_HOUSE*NUMBER_HOUSE*2+1));
+    char** contraintes = malloc(sizeof(char*) * (2*NUMBER_HOUSE*NUMBER_HOUSE + 1));
     for (int i = 0; i < NUMBER_HOUSE; i++)
     {
         for (int j = 0; j < NUMBER_HOUSE; j++)
@@ -192,7 +192,7 @@ char* gen_formule_maisons () {
         }
     }
     contraintes[NUMBER_HOUSE*NUMBER_HOUSE*2] = contraintes_problemes();
-    char* res = et_liste(contraintes, (NUMBER_HOUSE*NUMBER_HOUSE*2+1));
+    char* res = et_liste(contraintes, NUMBER_HOUSE*NUMBER_HOUSE*2 + 1);
     free(contraintes);
     return res;
 }

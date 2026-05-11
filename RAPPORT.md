@@ -26,7 +26,7 @@ Maintenant, au lieu de choisir les variables dans l'odre alphabétique et de tes
 Pour le choix de la variable, prenons celle qui apparait le plus de fois dans la formule afin d'espérer obtenir les plus grandes simplifications dès les premières étapes.
 Pour choisir si on teste d'abord T ou F, on génère les 2 formules et on teste celle qui est la plus courte (qui contient le moins d'opérateurs).
 
-Théoriquement, cela permet de réduire la complexité asymptotique. En pratique, cela rajoute pas mal d'opérations à chaque tour et n'est pas toujours le plus efficace. En pratique, on choisira l'algorithme basique pour éviter les grandes constantes de complexité.
+Théoriquement, cela permet de réduire la complexité asymptotique. En pratique, cela rajoute pas mal d'opérations à chaque tour car on boucle sur l'arbre des formules plusieurs fois de plus et n'est pas toujours le plus efficace. En pratique, on choisira l'algorithme basique pour éviter les grandes constantes de complexité.
 
 Q31 -
 La formule générée est sous FNC si les formules intiales sont des variables.
@@ -59,6 +59,11 @@ Avec l'implémentation des choix de variable / true et false :
 Sans cette optimisations :
 
 - pour 5 dames : 2, 4, 1, 3, 5 (trouvé en 1/100 secondes)
-- pour 8 dames : 4, 7, 5, 2, 6, 1, 3, 8 (trouvé en moins d'1min)
+- pour 8 dames : 4, 7, 5, 2, 6, 1, 3, 8 (trouvé en 20 secondes)
+
+Avec la spécialisation FNC :
+
+- pour 5 dames : 1, 3, 5, 2, 4 (instantanné)
+- pour 8 dames : 1, 5, 8, 6, 3, 7, 1, 4 (instantanné)
 
 On voit bien qu'en pratique l'algorithme simple est bien plus efficace.

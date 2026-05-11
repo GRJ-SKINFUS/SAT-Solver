@@ -42,15 +42,13 @@ char* au_moins_une(char** l, int n){
 }
 
 char* au_plus_une(char** l, int n) {
-
     if (n <= 1) { //au plus une formule avec 0 ou 1 formules atomiques est toujours vraie
         char* f = malloc(3);
-        strcpy(f, "()");
+        strcpy(f, "T");
         return f;
     }
 
     unsigned int total = 0;
-
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
 
@@ -61,23 +59,15 @@ char* au_plus_une(char** l, int n) {
         }
     }
 
-    char* f = malloc(total + 3);
-
+    char* f = malloc(total + 1);
     f[0] = '\0';
 
     unsigned int index = 0;
-
-    index += sprintf(f + index, "(");
-
     int first = 1;
-
     for (int i = 0; i < n; i++) {
-
         for (int j = i + 1; j < n; j++) {
-
             if (!first)
                 index += sprintf(f + index, "&");
-
             first = 0;
 
             index += sprintf(
@@ -88,9 +78,6 @@ char* au_plus_une(char** l, int n) {
             );
         }
     }
-
-    index += sprintf(f + index, ")");
-
     return f;
 }
 
@@ -99,7 +86,14 @@ char* et(char* f1, char* f2){
     int t2 = strlen(f2);
     char* f = malloc(sizeof(char) * (t1 + t2 + 4));
     // (f1 & f2)\0
-    sprintf(f, "(%s&%s)", f1, f2);
+    if (f1[0] != '(') {
+        f[0] = '(';
+        f[1] = '\0';
+    }
+    sprintf(f, "%s&%s", f1, f2);
+    if (f2[0] != '(') {
+        strcat(f, ")");
+    }
 
     return f;
 }
@@ -109,7 +103,14 @@ char* ou(char* f1, char* f2){
     int t2 = strlen(f2);
     char* f = malloc(sizeof(char) * (t1 + t2 + 4));
     // (f1 | f2)\0
-    sprintf(f, "(%s|%s)", f1, f2);
+    if (f1[0] != '(') {
+        f[0] = '(';
+        f[1] = '\0';
+    }
+    sprintf(f, "%s|%s", f1, f2);
+    if (f2[0] != '(') {
+        strcat(f, ")");
+    }
 
     return f;
 }
@@ -117,7 +118,7 @@ char* ou(char* f1, char* f2){
 char* et_liste(char** l, int n){
     if (n == 0) {
         char* r = malloc(3);
-        strcpy(r, "()");
+        strcpy(r, "F"); //la conjonction de 0 formules atomiques est fausse
         return r;
     }
 
