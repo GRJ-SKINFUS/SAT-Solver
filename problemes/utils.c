@@ -109,7 +109,7 @@ char* et(char* f1, char* f2){
 char* ou(char* f1, char* f2){
     int t1 = strlen(f1);
     int t2 = strlen(f2);
-    char* f = malloc(sizeof(char) * (t1 + t2 + 4=5));
+    char* f = malloc(sizeof(char) * (t1 + t2 + 5));
     f[0] = '\0';
     // (f1 | f2)\0
     if (f1[0] != '(') {

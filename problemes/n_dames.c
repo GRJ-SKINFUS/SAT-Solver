@@ -122,8 +122,16 @@ void gen_formule_n_dames (int n, char* filename) {
 }
 
 
-int main() {
-    printf("Génération de la formule pour le problème des n dames...\n");
-    gen_formule_n_dames(8, "n_dames_8.txt");
+int main(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "Utilisation: %s <n> <nom_fichier>\n", argv[0]);
+        return 1;
+    }
+
+    int n = atoi(argv[1]);
+    char* filename = argv[2];
+
+    printf("Génération de la formule pour le problème des %d dames...\n", n);
+    gen_formule_n_dames(n, filename);
     return 0;
 }

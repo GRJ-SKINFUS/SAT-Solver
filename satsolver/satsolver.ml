@@ -502,10 +502,20 @@ let main ()=
     if Array.length Sys.argv = 0 then failwith "Execution sans arguments" else begin
     	if Sys.argv.(1) = "test" then test() 
     	else begin
-				let f = from_file Sys.argv.(1) in
-				match quine_FNC (to_FNC f) with
-				| None -> print_string "La formule n'est pas satisfiable\n"
-				| Some v -> begin print_string "La formule est satisfiable en assignant 1 aux variables suivantes et 0 aux autres :\n"; print_true v end
+				let typ = Sys.argv.(1) in
+				if typ = "basic" then let f = from_file Sys.argv.(2) in
+					match quine f (list_vars f) with
+					| None -> print_string "La formule n'est pas satisfiable\n"
+					| Some v -> begin print_string "La formule est satisfiable en assignant 1 aux variables suivantes et 0 aux autres :\n"; print_true v end
+				else if typ = "opt" then let f = from_file Sys.argv.(2) in
+					match quine_opt f with
+					| None -> print_string "La formule n'est pas satisfiable\n"
+					| Some v -> begin print_string "La formule est satisfiable en assignant 1 aux variables suivantes et 0 aux autres :\n"; print_true v end
+				else if typ = "fnc" then let f = from_file Sys.argv.(2) in
+					match quine_FNC (to_FNC f) with
+					| None -> print_string "La formule n'est pas satisfiable\n"
+					| Some v -> begin print_string "La formule est satisfiable en assignant 1 aux variables suivantes et 0 aux autres :\n"; print_true v end
+				else failwith "Type d'algorithme inconnu, les types possibles sont : basic, opt, fnc"
 			end
     end
 

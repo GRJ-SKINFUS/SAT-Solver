@@ -89,8 +89,8 @@ char* not_variable(int c, int i, int j) {
 char* contrainte_une_caracteristique (int c, int j){
     char** l = malloc(NUMBER_HOUSE * sizeof(char*));
     
-    for (int i = 0; i<NUMBER_HOUSE; i++) {
-        l[i] = variable(c, i, j);
+    for (int i = 1; i<=NUMBER_HOUSE; i++) {
+        l[i-1] = variable(c, i, j);
     }
     
     char* auplus = au_plus_une(l, NUMBER_HOUSE);
@@ -106,8 +106,8 @@ char* contrainte_une_caracteristique (int c, int j){
 char* contrainte_meme_caracteristique (int c, int i){
     char** l = malloc(NUMBER_HOUSE * sizeof(char*));
 
-    for (int j = 0; j<NUMBER_HOUSE; j++) {
-        l[j] = variable(c, i, j);
+    for (int j = 1; j<=NUMBER_HOUSE; j++) {
+        l[j-1] = variable(c, i, j);
     }
 
     char* auplus = au_plus_une(l, NUMBER_HOUSE);
@@ -135,13 +135,14 @@ char* contrainte_meme_caracteristique (int c, int i){
 //Renvoie X_c1_v1_i => X_c2_v2_j  sous forme FNC-compatible 
 char* implication(int c1, int v1, int i, int c2, int v2, int j, bool par ){
     char * res = ou_par(not_variable(c1,v1,i), variable(c2,v2,j),par);
+    return res;
 }
 
 //Vérifie que la caractéristique (car1 v1 et car2 v2) est vérifiée par au moins une des maisons
 char* contrainte_correspondance (int car1, int v1, int car2, int v2){
     char** clauses = malloc(NUMBER_HOUSE * sizeof(char*));
-    for (int i = 0; i < NUMBER_HOUSE; i++) {
-        clauses[i] = implication(car1, v1, i, car2, v2, i, true);
+    for (int i = 1; i <= NUMBER_HOUSE; i++) {
+        clauses[i-1] = implication(car1, v1, i, car2, v2, i, true);
     }
     return et_liste(clauses, NUMBER_HOUSE);
 }
@@ -149,8 +150,8 @@ char* contrainte_correspondance (int car1, int v1, int car2, int v2){
 //Vérifie que la maison de caractéristique 1 est à gauche de celle de caractéristique 2
 char* contrainte_voisin_gauche (int car1, int v1, int car2, int v2) {
     char** clauses = malloc((NUMBER_HOUSE-1) * sizeof(char*));
-    for (int i = 0; i < NUMBER_HOUSE-1; i++) {
-        clauses[i] = implication(car1, v1, i, car2, v2, i+1, true);
+    for (int i = 1; i <= NUMBER_HOUSE-1; i++) {
+        clauses[i-1] = implication(car1, v1, i, car2, v2, i+1, true);
     }
     return et_liste(clauses, NUMBER_HOUSE-1);
 }
@@ -158,8 +159,8 @@ char* contrainte_voisin_gauche (int car1, int v1, int car2, int v2) {
 //Vérifie que la maison de caractéristique 1 est voisine de celle de caractéristique 2
 char* contrainte_voisin (int car1, int v1, int car2, int v2) {
     char** clauses = malloc((NUMBER_HOUSE-1) * sizeof(char*));
-    for (int i = 0; i < NUMBER_HOUSE-1; i++) {
-        clauses[i] = ou_par(implication(car1, v1, i, car2, v2, i+1,false),implication(car2, v2, i, car1, v1, i+1,false),true);
+    for (int i = 1; i <= NUMBER_HOUSE-1; i++) {
+        clauses[i-1] = ou_par(implication(car1, v1, i, car2, v2, i+1,false),implication(car2, v2, i, car1, v1, i+1,false),true);
     }
     return et_liste(clauses, NUMBER_HOUSE-1);
 }
@@ -189,12 +190,12 @@ char* contraintes_problemes () {
 
 char* gen_formule_maisons () {
     char** contraintes = malloc(sizeof(char*) * (2*NUMBER_HOUSE*NUMBER_HOUSE + 1));
-    for (int i = 0; i < NUMBER_HOUSE; i++)
+    for (int i = 1; i <= NUMBER_HOUSE; i++)
     {
-        for (int j = 0; j < NUMBER_HOUSE; j++)
+        for (int j = 1; j <= NUMBER_HOUSE; j++)
         {
-            contraintes[i*NUMBER_HOUSE + j] = contrainte_une_caracteristique(i,j);
-            contraintes[i*NUMBER_HOUSE + j + NUMBER_HOUSE*NUMBER_HOUSE] = contrainte_meme_caracteristique(i,j);
+            contraintes[(i-1)*NUMBER_HOUSE + j-1] = contrainte_une_caracteristique(i,j);
+            contraintes[(i-1)*NUMBER_HOUSE + j-1 + NUMBER_HOUSE*NUMBER_HOUSE] = contrainte_meme_caracteristique(i,j);
         }
     }
     contraintes[NUMBER_HOUSE*NUMBER_HOUSE*2] = contraintes_problemes();
@@ -203,10 +204,15 @@ char* gen_formule_maisons () {
     return res;
 }
 
-int main() {
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Utilisation: %s <nom_fichier>\n", argv[0]);
+        return 1;
+    }
+
     printf("Génération de la formule pour le problème des 5 maisons...\n");
     char* res = gen_formule_maisons();
-    write_to_file(res, "cinq_maisons.txt");
+    write_to_file(res, argv[1]);
     free(res);
     return 0;
 }
