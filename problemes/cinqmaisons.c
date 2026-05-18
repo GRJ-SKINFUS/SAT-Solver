@@ -129,7 +129,7 @@ char* contrainte_meme_caracteristique (int c, int i){
 //11. La personne qui a un cheval est voisine de celle qui fait de la danse
 //12. La personne qui fait du basket boit du Yop
 //13. L'Allemand fait du karaté
-//14. Le Norvégien vit juste à cçoté de la maison bleue
+//14. Le Norvégien vit juste à coté de la maison bleue
 //15. Le fan d'escalade a un voisin qui boit de l'eau
 
 //Renvoie X_c1_v1_i => X_c2_v2_j  sous forme FNC-compatible 
@@ -149,20 +149,23 @@ char* contrainte_correspondance (int car1, int v1, int car2, int v2){
 
 //Vérifie que la maison de caractéristique 1 est à gauche de celle de caractéristique 2
 char* contrainte_voisin_gauche (int car1, int v1, int car2, int v2) {
-    char** clauses = malloc((NUMBER_HOUSE-1) * sizeof(char*));
+    char** clauses = malloc(NUMBER_HOUSE * sizeof(char*));
     for (int i = 1; i <= NUMBER_HOUSE-1; i++) {
         clauses[i-1] = implication(car1, v1, i, car2, v2, i+1, true);
     }
-    return et_liste(clauses, NUMBER_HOUSE-1);
+    clauses[NUMBER_HOUSE-1] = not_variable(car1, v1, NUMBER_HOUSE);
+    return et_liste(clauses, NUMBER_HOUSE);
 }
 
 //Vérifie que la maison de caractéristique 1 est voisine de celle de caractéristique 2
 char* contrainte_voisin (int car1, int v1, int car2, int v2) {
-    char** clauses = malloc((NUMBER_HOUSE-1) * sizeof(char*));
-    for (int i = 1; i <= NUMBER_HOUSE-1; i++) {
-        clauses[i-1] = ou_par(implication(car1, v1, i, car2, v2, i+1,false),implication(car2, v2, i, car1, v1, i+1,false),true);
+    char** clauses = malloc(NUMBER_HOUSE * sizeof(char*));
+    for (int i = 2; i < NUMBER_HOUSE; i++) {
+        clauses[i-1] = ou_par(not_variable(car1,v1,i), ou_par(variable(car2,v2,i-1), variable(car2,v2,i+1), false),true);
     }
-    return et_liste(clauses, NUMBER_HOUSE-1);
+    clauses[0] = implication(car1, v1, 1, car2, v2, 2, true);
+    clauses[NUMBER_HOUSE-1] = implication(car1, v1, NUMBER_HOUSE, car2, v2, NUMBER_HOUSE - 1, true);
+    return et_liste(clauses, NUMBER_HOUSE);
 }
 
 char* contraintes_problemes () {
@@ -174,8 +177,8 @@ char* contraintes_problemes () {
     contraintes[4] = contrainte_correspondance(COULEUR, VERTE, BOISSON, CAFE);
     contraintes[5] = contrainte_correspondance(SPORT, VELO, ANIMAL, OISEAU);
     contraintes[6] = contrainte_correspondance(COULEUR, JAUNE, SPORT, DANSE);
-    contraintes[7] = variable(BOISSON,LAIT,2);
-    contraintes[8] = variable(NATIONALITE, NORVEGIEN, 0);
+    contraintes[7] = variable(BOISSON,LAIT,3);
+    contraintes[8] = variable(NATIONALITE, NORVEGIEN, 1);
     contraintes[9] = contrainte_voisin(SPORT, ESCALADE, ANIMAL, CHAT);
     contraintes[10] = contrainte_voisin(ANIMAL, CHEVAL, SPORT, DANSE);
     contraintes[11] = contrainte_correspondance(SPORT, BASKET, BOISSON, YOP);
